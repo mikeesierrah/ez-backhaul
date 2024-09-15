@@ -1,29 +1,32 @@
 #!/bin/bash
 
+#!/bin/bash
 
-ENCRYPTED_SCRIPT_URL="https://raw.githubusercontent.com/mikeesierrah/ez-backhaul/main/ez-backhaul.sh.enc"
+URL="https://raw.githubusercontent.com/mikeesierrah/ez-backhaul/main/ez-backhaul.sh.enc"
 
 echo "Downloading encrypted script..."
-TEMP_ENCRYPTED_SCRIPT=$(mktemp)
-curl -Ls "$ENCRYPTED_SCRIPT_URL" -o "$TEMP_ENCRYPTED_SCRIPT"
-
-
-if [ ! -f "$TEMP_ENCRYPTED_SCRIPT" ]; then
-    echo "Failed to download the encrypted script."
-    exit 1
-fi
+ENCRYPTED_SCRIPT=$(mktemp)
+curl -Ls "$URL" -o "$ENCRYPTED_SCRIPT"
 
 echo -n "Enter decryption password: "
 read -s PASSWORD
 echo
 
-echo "Decrypting and executing the script..."
-openssl enc -aes-256-cbc -d -in "$TEMP_ENCRYPTED_SCRIPT" -pass pass:"$PASSWORD" | bash
-
+DECRYPTED_SCRIPT=$(mktemp)
+openssl enc -aes-256-cbc -d -in "$ENCRYPTED_SCRIPT" -pass pass:"$PASSWORD" -out "$DECRYPTED_SCRIPT"
 if [ $? -ne 0 ]; then
-    echo "Invalid password or decryption failed."
-    rm "$TEMP_ENCRYPTED_SCRIPT"
+    echo "Failed to decrypt the script. Check your password or the file."
+    rm "$ENCRYPTED_SCRIPT" "$DECRYPTED_SCRIPT"
     exit 1
 fi
 
-rm "$TEMP_ENCRYPTED_SCRIPT"
+chmod +x "$DECRYPTED_SCRIPT"
+echo "Running the decrypted script..."
+bash "$DECRYPTED_SCRIPT"
+if [ $? -ne 0 ]; then
+    echo "Failed to execute the decrypted script."
+    rm "$ENCRYPTED_SCRIPT" "$DECRYPTED_SCRIPT"
+    exit 1
+fi
+
+rm "$ENCRYPTED_SCRIPT" "$DECRYPTED_SCRIPT"
