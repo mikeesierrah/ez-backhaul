@@ -6,7 +6,7 @@ this script installs and configurates Backhaul Core on linux based devices
 **run the script as root**
 run this command:
 ```bash
-bash <(curl -Ls https://github.com/mikeesierrah/ez-backhaul/raw/master/ez-backhaul.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/mikeesierrah/ez-backhaul/main/ez-backhaul.sh)
 ```
 
 ## Tip
