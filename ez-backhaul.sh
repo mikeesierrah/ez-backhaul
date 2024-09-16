@@ -1,32 +1,32 @@
 #!/bin/bash
-
-#!/bin/bash
+set +o history
 
 URL="https://raw.githubusercontent.com/mikeesierrah/ez-backhaul/main/ez-backhaul.sh.enc"
 
 echo "Downloading encrypted script..."
-ENCRYPTED_SCRIPT=$(mktemp)
-curl -Ls "$URL" -o "$ENCRYPTED_SCRIPT"
+encrypted_file=$(mktemp)
+curl -Ls "$URL" -o "$encrypted_file"
 
 echo -n "Enter decryption password: "
-read -s PASSWORD
+read -s password
 echo
 
-DECRYPTED_SCRIPT=$(mktemp)
-openssl enc -aes-256-cbc -d -in "$ENCRYPTED_SCRIPT" -pass pass:"$PASSWORD" -out "$DECRYPTED_SCRIPT"
+decrypted_content=$(openssl enc -aes-256-cbc -d -in "$encrypted_file" -pass pass:"$password")
 if [ $? -ne 0 ]; then
     echo "Failed to decrypt the script. Check your password or the file."
-    rm "$ENCRYPTED_SCRIPT" "$DECRYPTED_SCRIPT"
+    rm "$encrypted_file"
     exit 1
 fi
 
-chmod +x "$DECRYPTED_SCRIPT"
-echo "Running the decrypted script..."
-bash "$DECRYPTED_SCRIPT"
+bash -c "$decrypted_content"
 if [ $? -ne 0 ]; then
     echo "Failed to execute the decrypted script."
-    rm "$ENCRYPTED_SCRIPT" "$DECRYPTED_SCRIPT"
+    rm "$encrypted_file"
     exit 1
 fi
 
-rm "$ENCRYPTED_SCRIPT" "$DECRYPTED_SCRIPT"
+rm "$encrypted_file"
+
+unset password decrypted_content
+
+set -o history
